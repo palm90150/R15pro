@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  role      String   @default("MECHANIC") // "ADMIN", "MECHANIC"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id           String        @id @default(uuid())
+  name         String
+  phone        String        @unique
+  generation   String        // "V1", "V2", "V3", "V4", "R15M"
+  modelYear    Int
+  licensePlate String?
+  expenses     PartExpense[]
+  createdAt    DateTime      @default(now())
+}
+
+model Part {
+  id            String   @id @default(uuid())
+  partNumber    String   @unique
+  name          String
+  category      String   // "ENGINE", "BODY_FAIRING", "ELECTRICAL", "BRAKE_DRIVE", "ACCESSORIES"
+  compatibleGen String   // เก็บเป็น String คั่นด้วย comma เช่น "V1,V2,V3"
+  costPrice     Decimal
+  sellingPrice  Decimal
+  stockQuantity Int
+  minStockAlert Int      @default(3)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PartExpense {
+  id          String    @id @default(uuid())
+  title       String
+  amount      Decimal
+  category    String    // "PART_RESTOCK", "TOOL_EQUIPMENT", "SHOP_OPERATIONAL", "SPECIAL_ORDER"
+  supplier    String?
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  expenseDate DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+}
